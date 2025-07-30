@@ -7,6 +7,7 @@
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Frank+Ruhl+Libre:wght@300;500&display=swap" rel="stylesheet">
+
   <style>
     body {
       margin: 0;
@@ -121,43 +122,44 @@
       line-height: 1.6;
     }
 
+    /* ✅ MOBILE RESPONSIVE STYLES */
     @media (max-width: 768px) {
-      #sidebar-right {
-        position: fixed;
-        top: 0;
-        left: 0;
+      body {
+        flex-direction: column;
+      }
+
+      #sidebar-left {
         width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        visibility: hidden;
-        opacity: 0;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-        transform: none;
-        box-shadow: none;
-        overflow: auto;
-      }
-
-      #sidebar-right.visible {
-        visibility: visible;
-        opacity: 1;
-      }
-
-      #sidebar-right .lightbox-content {
-        background: #fff;
-        padding: 20px;
-        width: 90%;
-        max-width: 400px;
-        border-radius: 10px;
+        height: auto;
         position: relative;
+        padding: 20px;
+        box-shadow: none;
+        order: 1;
+      }
+
+      #sidebar-right {
+        width: 100%;
+        height: auto;
+        position: relative;
+        transform: none !important;
+        box-shadow: none;
+        padding: 20px;
+        overflow: visible;
+        order: 2;
+      }
+
+      #map {
+        position: relative;
+        height: 300px;
+        order: 3;
       }
     }
   </style>
 </head>
 <body>
+
 <div id="map"></div>
+
 <div id="sidebar-left">
   <h2>The Company<br>We Keep</h2>
   <ul id="brand-filter">
@@ -168,47 +170,93 @@
     <li data-brand="Marriott"><span style="background:#a6192e;"></span>Marriott</li>
   </ul>
 </div>
+
 <div id="sidebar-right">
-  <div class="lightbox-content">
-    <button id="close-panel">×</button>
-    <img id="hotel-img" src="" alt="Hotel Image" />
-    <h2 id="hotel-name"></h2>
-    <p id="hotel-desc"></p>
-  </div>
+  <button id="close-panel">×</button>
+  <img id="hotel-img" src="https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000" alt="Hotel Image" />
+  <h2 id="hotel-name">Hotel Name</h2>
+  <p id="hotel-desc">Click a hotel pin to learn more.</p>
 </div>
+
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoiZ2FycmV0dGRhbmllbHMiLCJhIjoiY21kcDJ0N2JoMDhnZTJyb3RiMTY3Y2NvcSJ9.8Jk8q0DmGn6RRfX7Lcuhag';
   const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v11',
     center: [-98.5795, 39.8283],
-    zoom: 4
+    zoom: 4,
+    projection: 'mercator'
   });
 
   const hotelFeatures = [
     { name: "Caesars Republic Scottsdale", coords: [-111.9281, 33.5024], brand: "Caesars", color: "#b29600" },
-    { name: "Hilton Branson Convention Center Hotel", coords: [-93.2170, 36.6443], brand: "Hilton", color: "#003366" }
+    { name: "Doubletree by Hilton Evansville", coords: [-87.5740, 37.9748], brand: "Hilton", color: "#003366" },
+    { name: "Hampton Inn Wichita Northwest", coords: [-97.3956, 37.7036], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Branson Convention Center Hotel", coords: [-93.2170, 36.6443], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Garden Inn Chandler Downtown", coords: [-111.8413, 33.3076], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Garden Inn Manhattan Kansas", coords: [-96.5980, 39.1836], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Promenade at Branson Landing", coords: [-93.2166, 36.6422], brand: "Hilton", color: "#003366" },
+    { name: "Hyatt Place Gilbert", coords: [-111.7890, 33.3528], brand: "Hyatt", color: "#007fa3" },
+    { name: "Residendce Inn by Marriott Phoenix Chandler/South", coords: [-111.8870, 33.2634], brand: "Marriott", color: "#a6192e" },
+    { name: "SpringHill Suites by Marriott Phoenix Goodyear", coords: [-112.3586, 33.4353], brand: "Marriott", color: "#a6192e" },
+    { name: "Tru by Hilton Goodyear Phoenix West AZ", coords: [-112.3755, 33.4498], brand: "Hilton", color: "#003366" },
+    { name: "Tru by Hilton Wichita Northeast", coords: [-97.2066, 37.7409], brand: "Hilton", color: "#003366" }
   ];
 
   const geojson = {
     type: "FeatureCollection",
     features: hotelFeatures.map(h => ({
       type: "Feature",
-      properties: { name: h.name, brand: h.brand, color: h.color },
-      geometry: { type: "Point", coordinates: h.coords }
+      properties: {
+        name: h.name,
+        brand: h.brand,
+        color: h.color
+      },
+      geometry: {
+        type: "Point",
+        coordinates: h.coords
+      }
     }))
   };
 
   map.on('load', () => {
     map.addSource('hotels', {
       type: 'geojson',
-      data: geojson
+      data: geojson,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
     });
 
     map.addLayer({
-      id: 'points',
+      id: 'clusters',
       type: 'circle',
       source: 'hotels',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#999',
+        'circle-radius': ['step', ['get', 'point_count'], 20, 5, 30, 10, 40],
+        'circle-opacity': 0.75
+      }
+    });
+
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'hotels',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': ['get', 'point_count_abbreviated'],
+        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+        'text-size': 12
+      }
+    });
+
+    map.addLayer({
+      id: 'unclustered-point',
+      type: 'circle',
+      source: 'hotels',
+      filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
         'circle-radius': 8,
@@ -217,7 +265,16 @@
       }
     });
 
-    map.on('click', 'points', (e) => {
+    map.on('click', 'clusters', (e) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+      const clusterId = features[0].properties.cluster_id;
+      map.getSource('hotels').getClusterExpansionZoom(clusterId, (err, zoom) => {
+        if (err) return;
+        map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+      });
+    });
+
+    map.on('click', 'unclustered-point', (e) => {
       const props = e.features[0].properties;
       document.getElementById('hotel-name').textContent = props.name;
       document.getElementById('hotel-img').src = 'https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000';
@@ -225,13 +282,40 @@
       document.getElementById('sidebar-right').classList.add('visible');
     });
 
-    map.on('mouseenter', 'points', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'points', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'clusters', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'clusters', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'unclustered-point', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'unclustered-point', () => map.getCanvas().style.cursor = '');
   });
 
   document.getElementById('close-panel').addEventListener('click', () => {
     document.getElementById('sidebar-right').classList.remove('visible');
   });
+
+  document.querySelectorAll('#brand-filter li').forEach(el => {
+    el.addEventListener('click', () => {
+      const brand = el.getAttribute('data-brand');
+      document.querySelectorAll('#brand-filter li').forEach(li => li.classList.remove('active'));
+      el.classList.add('active');
+
+      const filter = brand === 'all'
+        ? ['!', ['has', 'point_count']]
+        : ['all', ['!', ['has', 'point_count']], ['==', ['get', 'brand'], brand]];
+
+      map.setFilter('unclustered-point', filter);
+      map.setFilter('clusters', brand === 'all'
+        ? ['has', 'point_count']
+        : ['all', ['has', 'point_count'], ['==', ['get', 'brand'], brand]]);
+      map.setFilter('cluster-count', brand === 'all'
+        ? ['has', 'point_count']
+        : ['all', ['has', 'point_count'], ['==', ['get', 'brand'], brand]]);
+
+      if (brand === 'all') {
+        map.easeTo({ center: [-98.5795, 39.8283], zoom: 4, duration: 800 });
+      }
+    });
+  });
 </script>
+
 </body>
 </html>
