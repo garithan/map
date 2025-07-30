@@ -47,7 +47,7 @@
     projection: 'equalEarth'
   });
 
-  const hotels = [
+  const hotelFeatures = [
     { name: "Caesars Republic Scottsdale", coords: [-111.9281, 33.5024], brand: "Caesars", color: "#b29600" },
     { name: "Doubletree by Hilton Evansville", coords: [-87.5740, 37.9748], brand: "Hilton", color: "#003366" },
     { name: "Hampton Inn Wichita Northwest", coords: [-97.3956, 37.7036], brand: "Hilton", color: "#003366" },
@@ -62,25 +62,107 @@
     { name: "Tru by Hilton Wichita Northeast", coords: [-97.2066, 37.7409], brand: "Hilton", color: "#003366" }
   ];
 
-  hotels.forEach(hotel => {
-    const el = document.createElement('div');
-    el.style.backgroundColor = hotel.color;
-    el.style.width = '14px';
-    el.style.height = '14px';
-    el.style.borderRadius = '50%';
-    el.style.cursor = 'pointer';
+  const geojson = {
+    type: "FeatureCollection",
+    features: hotelFeatures.map(h => ({
+      type: "Feature",
+      properties: {
+        name: h.name,
+        brand: h.brand,
+        color: h.color
+      },
+      geometry: {
+        type: "Point",
+        coordinates: h.coords
+      }
+    }))
+  };
 
-    new mapboxgl.Marker(el)
-      .setLngLat(hotel.coords)
-      .addTo(map)
-      .getElement()
-      .addEventListener('click', () => {
-        document.getElementById('hotel-name').textContent = hotel.name;
-        document.getElementById('hotel-name').classList.remove('default-message');
-        document.getElementById('hotel-img').src = 'https://via.placeholder.com/600x400?text=Hotel+Image';
-        document.getElementById('hotel-desc').textContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.';
-        document.getElementById('brand-bar').style.backgroundColor = hotel.color;
+  map.on('load', () => {
+    map.addSource('hotels', {
+      type: 'geojson',
+      data: geojson,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
+    });
+
+    map.addLayer({
+      id: 'clusters',
+      type: 'circle',
+      source: 'hotels',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#999',
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          20, 5, 30, 10, 40
+        ],
+        'circle-opacity': 0.7
+      }
+    });
+
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'hotels',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': ['get', 'point_count_abbreviated'],
+        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+        'text-size': 12
+      }
+    });
+
+    map.addLayer({
+      id: 'unclustered-point',
+      type: 'circle',
+      source: 'hotels',
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-color': ['get', 'color'],
+        'circle-radius': 8,
+        'circle-stroke-width': 1,
+        'circle-stroke-color': '#fff'
+      }
+    });
+
+    map.on('click', 'clusters', (e) => {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: ['clusters']
       });
+      const clusterId = features[0].properties.cluster_id;
+      map.getSource('hotels').getClusterExpansionZoom(
+        clusterId,
+        (err, zoom) => {
+          if (err) return;
+          map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+        }
+      );
+    });
+
+    map.on('click', 'unclustered-point', (e) => {
+      const props = e.features[0].properties;
+      document.getElementById('hotel-name').textContent = props.name;
+      document.getElementById('hotel-name').classList.remove('default-message');
+      document.getElementById('hotel-img').src = 'https://via.placeholder.com/600x400?text=Hotel+Image';
+      document.getElementById('hotel-desc').textContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.';
+      document.getElementById('brand-bar').style.backgroundColor = props.color;
+    });
+
+    map.on('mouseenter', 'clusters', () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'clusters', () => {
+      map.getCanvas().style.cursor = '';
+    });
+    map.on('mouseenter', 'unclustered-point', () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'unclustered-point', () => {
+      map.getCanvas().style.cursor = '';
+    });
   });
 </script>
 </body>
