@@ -6,14 +6,16 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans&family=Frank+Ruhl+Libre:wght@500&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; padding: 0; font-family: sans-serif; }
+    body { margin: 0; padding: 0; font-family: 'DM Sans', sans-serif; color: #0F2334; }
     #map { position: absolute; top: 0; bottom: 0; width: 70%; }
     #sidebar {
       position: absolute; top: 0; right: 0; bottom: 0; width: 30%; padding: 20px; background: #f9f9f9; overflow-y: auto; display: none;
     }
     #sidebar.visible { display: block; }
     #sidebar img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 10px; }
+    #hotel-name { font-family: 'Frank Ruhl Libre', serif; color: #0D1C29; margin: 0 0 10px 0; }
     .brand-bar { height: 6px; width: 100%; margin-bottom: 10px; }
   </style>
 </head>
@@ -23,7 +25,7 @@
   <div class="brand-bar" id="brand-bar"></div>
   <img id="hotel-img" src="" alt="Hotel Image" />
   <h2 id="hotel-name"></h2>
-  <p id="hotel-location"></p>
+  <p id="hotel-desc"></p>
 </div>
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoiZ2FycmV0dGRhbmllbHMiLCJhIjoiY21kcDJ0N2JoMDhnZTJyb3RiMTY3Y2NvcSJ9.8Jk8q0DmGn6RRfX7Lcuhag';
@@ -35,18 +37,18 @@
   });
 
   const hotels = [
-    { name: "Caesars Republic Scottsdale", coords: [-111.9281, 33.5024], city: "Scottsdale", brand: "Caesars", color: "#b29600" },
-    { name: "Doubletree by Hilton Evansville", coords: [-87.5740, 37.9748], city: "Evansville", brand: "Hilton", color: "#003366" },
-    { name: "Hampton Inn Wichita Northwest", coords: [-97.3956, 37.7036], city: "Wichita", brand: "Hilton", color: "#003366" },
-    { name: "Hilton Branson Convention Center Hotel", coords: [-93.2170, 36.6443], city: "Branson", brand: "Hilton", color: "#003366" },
-    { name: "Hilton Garden Inn Chandler Downtown", coords: [-111.8413, 33.3076], city: "Chandler", brand: "Hilton", color: "#003366" },
-    { name: "Hilton Garden Inn Manhattan Kansas", coords: [-96.5980, 39.1836], city: "Manhattan", brand: "Hilton", color: "#003366" },
-    { name: "Hilton Promenade at Branson Landing", coords: [-93.2166, 36.6422], city: "Branson", brand: "Hilton", color: "#003366" },
-    { name: "Hyatt Place Gilbert", coords: [-111.7890, 33.3528], city: "Gilbert", brand: "Hyatt", color: "#007fa3" },
-    { name: "Residendce Inn by Marriott Phoenix Chandler/South", coords: [-111.8870, 33.2634], city: "Chandler", brand: "Marriott", color: "#a6192e" },
-    { name: "SpringHill Suites by Marriott Phoenix Goodyear", coords: [-112.3586, 33.4353], city: "Goodyear", brand: "Marriott", color: "#a6192e" },
-    { name: "Tru by Hilton Goodyear Phoenix West AZ", coords: [-112.3755, 33.4498], city: "Goodyear", brand: "Hilton", color: "#003366" },
-    { name: "Tru by Hilton Wichita Northeast", coords: [-97.2066, 37.7409], city: "Wichita", brand: "Hilton", color: "#003366" }
+    { name: "Caesars Republic Scottsdale", coords: [-111.9281, 33.5024], brand: "Caesars", color: "#b29600" },
+    { name: "Doubletree by Hilton Evansville", coords: [-87.5740, 37.9748], brand: "Hilton", color: "#003366" },
+    { name: "Hampton Inn Wichita Northwest", coords: [-97.3956, 37.7036], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Branson Convention Center Hotel", coords: [-93.2170, 36.6443], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Garden Inn Chandler Downtown", coords: [-111.8413, 33.3076], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Garden Inn Manhattan Kansas", coords: [-96.5980, 39.1836], brand: "Hilton", color: "#003366" },
+    { name: "Hilton Promenade at Branson Landing", coords: [-93.2166, 36.6422], brand: "Hilton", color: "#003366" },
+    { name: "Hyatt Place Gilbert", coords: [-111.7890, 33.3528], brand: "Hyatt", color: "#007fa3" },
+    { name: "Residendce Inn by Marriott Phoenix Chandler/South", coords: [-111.8870, 33.2634], brand: "Marriott", color: "#a6192e" },
+    { name: "SpringHill Suites by Marriott Phoenix Goodyear", coords: [-112.3586, 33.4353], brand: "Marriott", color: "#a6192e" },
+    { name: "Tru by Hilton Goodyear Phoenix West AZ", coords: [-112.3755, 33.4498], brand: "Hilton", color: "#003366" },
+    { name: "Tru by Hilton Wichita Northeast", coords: [-97.2066, 37.7409], brand: "Hilton", color: "#003366" }
   ];
 
   hotels.forEach(hotel => {
@@ -64,7 +66,7 @@
       .addEventListener('click', () => {
         document.getElementById('hotel-name').textContent = hotel.name;
         document.getElementById('hotel-img').src = 'https://via.placeholder.com/600x400?text=Hotel+Image';
-        document.getElementById('hotel-location').textContent = hotel.city;
+        document.getElementById('hotel-desc').textContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.';
         document.getElementById('brand-bar').style.backgroundColor = hotel.color;
         document.getElementById('sidebar').classList.add('visible');
       });
