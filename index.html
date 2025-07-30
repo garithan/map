@@ -6,37 +6,131 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans&family=Frank+Ruhl+Libre:wght@300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Frank+Ruhl+Libre:wght@300;500&display=swap" rel="stylesheet">
+
   <style>
     body { margin: 0; padding: 0; font-family: 'DM Sans', sans-serif; color: #0F2334; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
-    #sidebar {
+
+    /* Left Sidebar - Brand Key */
+    #sidebar-left {
       position: absolute;
       top: 0;
       left: 0;
-      width: 400px;
+      width: 280px;
       height: 100%;
-      padding: 20px;
-      background: rgba(249, 249, 249, 0.95);
-      overflow-y: auto;
+      background: #fff;
+      padding: 40px 20px;
       z-index: 10;
-      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
     }
-    #sidebar img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 10px; }
-    #hotel-name { font-family: 'Frank Ruhl Libre', serif; color: #0D1C29; margin: 0 0 10px 0; }
-    .brand-bar { height: 6px; width: 100%; margin-bottom: 10px; }
-    #hotel-desc { font-family: 'DM Sans', sans-serif; color: #0F2334; }
-    .default-message { color: #777; font-style: italic; }
+
+    #sidebar-left h2 {
+      font-family: 'Frank Ruhl Libre', serif;
+      font-weight: 500;
+      font-size: 24px;
+      margin-bottom: 24px;
+      line-height: 1.2;
+    }
+
+    #sidebar-left ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #sidebar-left li {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #sidebar-left li span {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-right: 10px;
+      display: inline-block;
+    }
+
+    /* Right Sidebar - Hotel Info Panel */
+    #sidebar-right {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 380px;
+      height: 100%;
+      background: #fff;
+      padding: 20px;
+      z-index: 11;
+      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+
+    #sidebar-right.visible {
+      transform: translateX(0);
+    }
+
+    #sidebar-right button#close-panel {
+      background: none;
+      border: none;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      float: right;
+      color: #333;
+    }
+
+    #sidebar-right img {
+      width: 100%;
+      border-radius: 6px;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    #sidebar-right h2 {
+      font-family: 'Frank Ruhl Libre', serif;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    #sidebar-right p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
-<div id='map'></div>
-<div id='sidebar'>
-  <div class="brand-bar" id="brand-bar" style="background-color:transparent;"></div>
-  <img id="hotel-img" src="https://via.placeholder.com/600x400?text=Hotel+Image" alt="Hotel Image" />
-  <h2 id="hotel-name" class="default-message">Browse Our Porfolio</h2>
-  <p id="hotel-desc"></p>
+
+<div id="map"></div>
+
+<!-- LEFT Sidebar: Brand Legend -->
+<div id="sidebar-left">
+  <h2>The Company<br>We Keep</h2>
+  <ul>
+    <li><span style="background:#000;"></span>View All</li>
+    <li><span style="background:#003366;"></span>Hilton</li>
+    <li><span style="background:#007fa3;"></span>Hyatt</li>
+    <li><span style="background:#b29600;"></span>Caesars</li>
+    <li><span style="background:#a6192e;"></span>Marriott</li>
+  </ul>
 </div>
+
+<!-- RIGHT Sidebar: Hotel Detail Panel -->
+<div id="sidebar-right">
+  <button id="close-panel">×</button>
+  <img id="hotel-img" src="https://via.placeholder.com/600x400?text=Hotel+Image" alt="Hotel Image" />
+  <h2 id="hotel-name">Hotel Name</h2>
+  <p id="hotel-desc">Click a hotel pin to learn more.</p>
+</div>
+
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoiZ2FycmV0dGRhbmllbHMiLCJhIjoiY21kcDJ0N2JoMDhnZTJyb3RiMTY3Y2NvcSJ9.8Jk8q0DmGn6RRfX7Lcuhag';
   const map = new mapboxgl.Map({
@@ -52,14 +146,8 @@
     { name: "Doubletree by Hilton Evansville", coords: [-87.5740, 37.9748], brand: "Hilton", color: "#003366" },
     { name: "Hampton Inn Wichita Northwest", coords: [-97.3956, 37.7036], brand: "Hilton", color: "#003366" },
     { name: "Hilton Branson Convention Center Hotel", coords: [-93.2170, 36.6443], brand: "Hilton", color: "#003366" },
-    { name: "Hilton Garden Inn Chandler Downtown", coords: [-111.8413, 33.3076], brand: "Hilton", color: "#003366" },
-    { name: "Hilton Garden Inn Manhattan Kansas", coords: [-96.5980, 39.1836], brand: "Hilton", color: "#003366" },
-    { name: "Hilton Promenade at Branson Landing", coords: [-93.2166, 36.6422], brand: "Hilton", color: "#003366" },
     { name: "Hyatt Place Gilbert", coords: [-111.7890, 33.3528], brand: "Hyatt", color: "#007fa3" },
-    { name: "Residendce Inn by Marriott Phoenix Chandler/South", coords: [-111.8870, 33.2634], brand: "Marriott", color: "#a6192e" },
-    { name: "SpringHill Suites by Marriott Phoenix Goodyear", coords: [-112.3586, 33.4353], brand: "Marriott", color: "#a6192e" },
-    { name: "Tru by Hilton Goodyear Phoenix West AZ", coords: [-112.3755, 33.4498], brand: "Hilton", color: "#003366" },
-    { name: "Tru by Hilton Wichita Northeast", coords: [-97.2066, 37.7409], brand: "Hilton", color: "#003366" }
+    { name: "SpringHill Suites by Marriott Phoenix Goodyear", coords: [-112.3586, 33.4353], brand: "Marriott", color: "#a6192e" }
   ];
 
   const geojson = {
@@ -128,41 +216,26 @@
       }
     });
 
-    map.on('click', 'clusters', (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: ['clusters']
-      });
-      const clusterId = features[0].properties.cluster_id;
-      map.getSource('hotels').getClusterExpansionZoom(
-        clusterId,
-        (err, zoom) => {
-          if (err) return;
-          map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
-        }
-      );
-    });
-
     map.on('click', 'unclustered-point', (e) => {
       const props = e.features[0].properties;
       document.getElementById('hotel-name').textContent = props.name;
-      document.getElementById('hotel-name').classList.remove('default-message');
-      document.getElementById('hotel-img').src = 'https://via.placeholder.com/600x400?text=Hotel+Image';
-      document.getElementById('hotel-desc').textContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.';
-      document.getElementById('brand-bar').style.backgroundColor = props.color;
+      document.getElementById('hotel-img').src = 'https://via.placeholder.com/600x400?text=' + encodeURIComponent(props.name);
+      document.getElementById('hotel-desc').textContent = `This is a sample description for ${props.name}.`;
+      document.getElementById('sidebar-right').classList.add('visible');
     });
 
-    map.on('mouseenter', 'clusters', () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'clusters', () => {
-      map.getCanvas().style.cursor = '';
-    });
     map.on('mouseenter', 'unclustered-point', () => {
       map.getCanvas().style.cursor = 'pointer';
     });
+
     map.on('mouseleave', 'unclustered-point', () => {
       map.getCanvas().style.cursor = '';
     });
+  });
+
+  // Close right panel
+  document.getElementById('close-panel').addEventListener('click', () => {
+    document.getElementById('sidebar-right').classList.remove('visible');
   });
 </script>
 </body>
