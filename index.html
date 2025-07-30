@@ -3,14 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <title>Hotel Map</title>
-  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Frank+Ruhl+Libre:wght@300;500&display=swap" rel="stylesheet">
 
   <style>
-    body { margin: 0; padding: 0; font-family: 'DM Sans', sans-serif; color: #0F2334; }
-    #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'DM Sans', sans-serif;
+      color: #0F2334;
+      display: flex;
+      flex-direction: row;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
 
     #sidebar-left {
       position: absolute;
@@ -39,7 +53,6 @@
     }
 
     #sidebar-left li {
-      font-family: 'DM Sans', sans-serif;
       font-weight: 700;
       font-size: 14px;
       margin-bottom: 16px;
@@ -108,6 +121,39 @@
       font-size: 14px;
       line-height: 1.6;
     }
+
+    /* ✅ MOBILE RESPONSIVE STYLES */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      #sidebar-left {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 20px;
+        box-shadow: none;
+        order: 1;
+      }
+
+      #sidebar-right {
+        width: 100%;
+        height: auto;
+        position: relative;
+        transform: none !important;
+        box-shadow: none;
+        padding: 20px;
+        overflow: visible;
+        order: 2;
+      }
+
+      #map {
+        position: relative;
+        height: 300px;
+        order: 3;
+      }
+    }
   </style>
 </head>
 <body>
@@ -127,7 +173,7 @@
 
 <div id="sidebar-right">
   <button id="close-panel">×</button>
-  <img id="hotel-img" src="https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG90ZWx8ZW58MHx8MHx8fDA%3D" alt="Hotel Image" />
+  <img id="hotel-img" src="https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000" alt="Hotel Image" />
   <h2 id="hotel-name">Hotel Name</h2>
   <p id="hotel-desc">Click a hotel pin to learn more.</p>
 </div>
@@ -189,11 +235,7 @@
       filter: ['has', 'point_count'],
       paint: {
         'circle-color': '#999',
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          20, 5, 30, 10, 40
-        ],
+        'circle-radius': ['step', ['get', 'point_count'], 20, 5, 30, 10, 40],
         'circle-opacity': 0.75
       }
     });
@@ -235,7 +277,7 @@
     map.on('click', 'unclustered-point', (e) => {
       const props = e.features[0].properties;
       document.getElementById('hotel-name').textContent = props.name;
-      document.getElementById('hotel-img').src = 'https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG90ZWx8ZW58MHx8MHx8fDA%3D';
+      document.getElementById('hotel-img').src = 'https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000';
       document.getElementById('hotel-desc').textContent = `This is a sample description for ${props.name}.`;
       document.getElementById('sidebar-right').classList.add('visible');
     });
@@ -269,11 +311,7 @@
         : ['all', ['has', 'point_count'], ['==', ['get', 'brand'], brand]]);
 
       if (brand === 'all') {
-        map.easeTo({
-          center: [-98.5795, 39.8283],
-          zoom: 4,
-          duration: 800
-        });
+        map.easeTo({ center: [-98.5795, 39.8283], zoom: 4, duration: 800 });
       }
     });
   });
