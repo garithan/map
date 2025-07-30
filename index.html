@@ -122,7 +122,6 @@
       line-height: 1.6;
     }
 
-    /* ✅ MOBILE RESPONSIVE STYLES */
     @media (max-width: 768px) {
       body {
         flex-direction: column;
@@ -146,6 +145,11 @@
         padding: 20px;
         overflow: visible;
         order: 2;
+        display: none;
+      }
+
+      #sidebar-right.visible {
+        display: block;
       }
 
       #map {
