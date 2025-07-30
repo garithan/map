@@ -15,6 +15,7 @@
       color: #0F2334;
       display: flex;
       flex-direction: row;
+      flex-wrap: wrap;
     }
 
     #map {
@@ -23,6 +24,7 @@
       bottom: 0;
       width: 100%;
       height: 100%;
+      z-index: 1;
     }
 
     #sidebar-left {
@@ -122,6 +124,17 @@
     }
 
     @media (max-width: 768px) {
+      #sidebar-left {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        box-shadow: none;
+        z-index: 2;
+        background: #fff;
+        order: -1;
+      }
+
       #sidebar-right {
         position: fixed;
         top: 0;
@@ -138,6 +151,7 @@
         transform: none;
         box-shadow: none;
         overflow: auto;
+        z-index: 999;
       }
 
       #sidebar-right.visible {
@@ -157,7 +171,6 @@
   </style>
 </head>
 <body>
-<div id="map"></div>
 <div id="sidebar-left">
   <h2>The Company<br>We Keep</h2>
   <ul id="brand-filter">
@@ -168,6 +181,7 @@
     <li data-brand="Marriott"><span style="background:#a6192e;"></span>Marriott</li>
   </ul>
 </div>
+<div id="map"></div>
 <div id="sidebar-right">
   <div class="lightbox-content">
     <button id="close-panel">×</button>
